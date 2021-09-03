@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, createRef } from "react";
 import {
 	Card,
 	CardActions,
@@ -8,23 +8,57 @@ import {
 	Button,
 	Typography,
 } from "@material-ui/core";
+import classNames from "classnames";
 
 import useStyles from "./styles.js";
 
 const NewsCard = ({
-	article: { description, publishedAt, source, title, url, urlToImage },
+	article: {
+		description,
+		publishedAt,
+		source,
+		title,
+		url,
+		urlToImage,
+		name,
+		category,
+		country,
+	},
+	activeArticle,
 	i,
 }) => {
 	const classes = useStyles();
+	const [elRefs, setElRefs] = useState([]);
+	const scrollToRef = (ref) => window.scroll(0, ref.current.offsetTop - 50);
+
+	useEffect(() => {
+		setElRefs((refs) =>
+			Array(20)
+				.fill()
+				.map((_, j) => refs[j] || createRef())
+		);
+	}, []);
+
+	useEffect(() => {
+		if (i === activeArticle && elRefs[activeArticle]) {
+			scrollToRef(elRefs[activeArticle]);
+		}
+	}, [i, activeArticle, elRefs]);
 
 	return (
-		<Card className={classes.card}>
+		<Card
+			ref={elRefs[i]}
+			className={classNames(
+				classes.card,
+				activeArticle === i ? classes.activeCard : null
+			)}
+		>
 			<CardActionArea href={url} target="_blank">
 				<CardMedia
 					className={classes.media}
 					image={
 						urlToImage ||
-						"https://www.google.com/imgres?imgurl=https%3A%2F%2Fpreviews.123rf.com%2Fimages%2Falhovik%2Falhovik1709%2Falhovik170900028%2F86470277-%25EC%2586%258D%25EB%25B3%25B4-%25EB%25B0%25B0%25EA%25B2%25BD-%25EC%2584%25B8%25EA%25B3%2584-%25EA%25B8%2580%25EB%25A1%259C%25EB%25B2%258C-tv-%25EB%2589%25B4%25EC%258A%25A4-%25EB%25B0%25B0%25EB%2584%2588-%25EB%2594%2594%25EC%259E%2590%25EC%259D%25B8.jpg&imgrefurl=https%3A%2F%2Fkr.123rf.com%2Fphoto_86470277_%25EC%2586%258D%25EB%25B3%25B4-%25EB%25B0%25B0%25EA%25B2%25BD-%25EC%2584%25B8%25EA%25B3%2584-%25EA%25B8%2580%25EB%25A1%259C%25EB%25B2%258C-tv-%25EB%2589%25B4%25EC%258A%25A4-%25EB%25B0%25B0%25EB%2584%2588-%25EB%2594%2594%25EC%259E%2590%25EC%259D%25B8.html&tbnid=JK3GyFrFZY_cLM&vet=12ahUKEwinkZKVjODyAhVIEKYKHXHGBX0QMygmegUIARCFAg..i&docid=omcFgqeC9bH01M&w=1300&h=776&q=news&ved=2ahUKEwinkZKVjODyAhVIEKYKHXHGBX0QMygmegUIARCFAg"
+						"https://previews.123rf.com/images/alhovik/alhovik1709/alhovik170900028/86470277-%EC%86%8D%EB%B3%B4-%EB%B0%B0%EA%B2%BD-%EC%84%B8%EA%B3%84-%EA%B8%80%EB%A1%9C%EB%B2%8C-tv-%EB%89%B4%EC%8A%A4-%EB%B0%B0%EB%84%88-%EB%94%94%EC%9E%90%EC%9D%B8.jpg"
 					}
 				/>
 				<div className={classes.details}>
@@ -33,18 +67,20 @@ const NewsCard = ({
 						color="textSecondary"
 						component="h2"
 					>
-						{new Date(publishedAt).toDateString()}
+						{publishedAt
+							? new Date(publishedAt).toDateString()
+							: country}
 					</Typography>
 					<Typography
 						variant="body2"
 						color="textSecondary"
 						component="h2"
 					>
-						{source.name}
+						{source ? source.name : category}
 					</Typography>
 				</div>
 				<Typography className={classes.title} gutterBottom variant="h5">
-					{title}
+					{title || name}
 				</Typography>
 				<CardContent>
 					<Typography
